@@ -6,7 +6,7 @@ LABEL org.opencontainers.image.source="https://github.com/giovtorres/slurm-docke
       org.label-schema.docker.cmd="docker-compose up -d" \
       maintainer="Giovanni Torres"
 
-ARG SLURM_TAG=slurm-19-05-1-2
+ARG SLURM_TAG=slurm-21-08-3-1
 ARG GOSU_VERSION=1.11
 
 RUN set -ex \
@@ -88,7 +88,14 @@ RUN set -x \
 COPY slurm.conf /etc/slurm/slurm.conf
 COPY slurmdbd.conf /etc/slurm/slurmdbd.conf
 
+RUN rpm --import https://xpra.org/gpg.asc && wget -O /etc/yum.repos.d/xpra.repo https://xpra.org/repos/CentOS/xpra.repo && yum install -y xpra
+
+RUN chmod 0600 /etc/slurm/slurmdbd.conf
+
 COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
+
+RUN set -ex \
+    && yum -y install openssh-server xterm
 
 CMD ["slurmdbd"]

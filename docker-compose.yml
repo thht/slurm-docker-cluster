@@ -3,7 +3,7 @@ version: "2.2"
 services:
   mysql:
     image: mysql:5.7
-    hostname: mysql
+    hostname: mysql.docker
     container_name: mysql
     environment:
       MYSQL_RANDOM_ROOT_PASSWORD: "yes"
@@ -14,24 +14,25 @@ services:
       - var_lib_mysql:/var/lib/mysql
 
   slurmdbd:
-    image: slurm-docker-cluster:19.05.1
+    image: slurm-docker-cluster:21.08.3
     command: ["slurmdbd"]
     container_name: slurmdbd
-    hostname: slurmdbd
+    hostname: slurmdbd.docker
     volumes:
       - etc_munge:/etc/munge
       - etc_slurm:/etc/slurm
       - var_log_slurm:/var/log/slurm
     expose:
       - "6819"
+      - "22"
     depends_on:
       - mysql
 
   slurmctld:
-    image: slurm-docker-cluster:19.05.1
+    image: slurm-docker-cluster:21.08.3
     command: ["slurmctld"]
     container_name: slurmctld
-    hostname: slurmctld
+    hostname: slurmctld.docker
     volumes:
       - etc_munge:/etc/munge
       - etc_slurm:/etc/slurm
@@ -39,13 +40,14 @@ services:
       - var_log_slurm:/var/log/slurm
     expose:
       - "6817"
+      - "22"
     depends_on:
       - "slurmdbd"
 
   c1:
-    image: slurm-docker-cluster:19.05.1
+    image: slurm-docker-cluster:21.08.3
     command: ["slurmd"]
-    hostname: c1
+    hostname: c1.docker
     container_name: c1
     volumes:
       - etc_munge:/etc/munge
@@ -54,13 +56,14 @@ services:
       - var_log_slurm:/var/log/slurm
     expose:
       - "6818"
+      - "22"
     depends_on:
       - "slurmctld"
 
   c2:
-    image: slurm-docker-cluster:19.05.1
+    image: slurm-docker-cluster:21.08.3
     command: ["slurmd"]
-    hostname: c2
+    hostname: c2.docker
     container_name: c2
     volumes:
       - etc_munge:/etc/munge
@@ -69,6 +72,22 @@ services:
       - var_log_slurm:/var/log/slurm
     expose:
       - "6818"
+      - "22"
+    depends_on:
+      - "slurmctld"
+
+  login:
+    image: slurm-docker-cluster:21.08.3
+    command: ["login"]
+    hostname: login.docker
+    container_name: login
+    volumes:
+      - etc_munge:/etc/munge
+      - etc_slurm:/etc/slurm
+      - slurm_jobdir:/data
+      - var_log_slurm:/var/log/slurm
+    expose:
+      - "22"
     depends_on:
       - "slurmctld"
 

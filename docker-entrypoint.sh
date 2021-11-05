@@ -1,6 +1,18 @@
 #!/bin/bash
 set -e
 
+chown slurm /etc/slurm/*
+chmod 0600 /etc/slurm/slurmdbd.conf
+
+/usr/sbin/sshd-keygen
+
+/usr/sbin/sshd
+
+#useradd -m th
+
+useradd -rm -d /home/th -s /bin/bash -u 1000 th 
+echo 'th:th' | chpasswd
+
 if [ "$1" = "slurmdbd" ]
 then
     echo "---> Starting the MUNGE Authentication service (munged) ..."
@@ -55,6 +67,14 @@ then
 
     echo "---> Starting the Slurm Node Daemon (slurmd) ..."
     exec /usr/sbin/slurmd -Dvvv
+fi
+
+if [ "$1" = "login" ]
+then
+    echo "---> Starting the MUNGE Authentication service (munged) ..."
+    gosu munge /usr/sbin/munged
+
+    sleep 360000
 fi
 
 exec "$@"
